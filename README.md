@@ -3,7 +3,7 @@
 A production-style backend reservation management application built with Spring Boot, PostgreSQL, Spring Security, JWT authentication, and Docker.
 
 The system provides secure REST APIs for managing rooms and reservations while implementing role-based authorization, validation, centralized exception handling, structured logging, correlation IDs, automated testing, and containerized deployment.
-
+[![CI](https://github.com/YogendraPattabhiMekala/reservation-system/actions/workflows/ci.yml/badge.svg)](https://github.com/YogendraPattabhiMekala/reservation-system/actions/workflows/ci.yml)
 ## Tech Stack
 
 - Java 21
