@@ -951,7 +951,7 @@ The current system provides a strong backend foundation for reservation manageme
 - API versioning
 - Improved OpenAPI documentation
 - Frontend reservation calendar and availability visualization
-
+> This repository uses GitHub Actions CI and protected pull-request-based development on the `main` branch.
 ## Project Status
 
 The backend currently includes:
