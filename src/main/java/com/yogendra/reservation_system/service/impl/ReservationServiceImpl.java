@@ -601,9 +601,7 @@ public class ReservationServiceImpl implements ReservationService {
         );
 
 
-        Specification<Reservation> specification =
-                Specification.where(null);
-
+        Specification<Reservation> specification = Specification.unrestricted();
 
         if (customerName != null
                 && !customerName.isBlank()) {
