@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import org.springframework.test.context.ActiveProfiles;
 import com.yogendra.reservation_system.model.ReservationStatus;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 @DataJpaTest
+@ActiveProfiles("test")
 class ReservationRepositoryTest {
     @Test
     void save_ShouldPersistReservation() {

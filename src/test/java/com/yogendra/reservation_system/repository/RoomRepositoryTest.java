@@ -9,8 +9,9 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import java.util.Optional;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
-
+import org.springframework.test.context.ActiveProfiles;
 @DataJpaTest
+@ActiveProfiles("test")
 class RoomRepositoryTest {
 
     @Autowired
