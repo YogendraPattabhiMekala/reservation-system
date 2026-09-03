@@ -355,7 +355,33 @@ Current regression baseline:
 ```text
 159 / 159 tests passing
 ```
+## CI/CD and Code Quality
 
+The project uses GitHub Actions to automatically validate changes pushed to the repository and pull requests targeting the `main` branch.
+
+### Continuous Integration
+
+The CI pipeline performs automated build and verification checks before changes can be merged.
+
+The pipeline validates:
+
+- Java 21 build compatibility
+- Maven dependency resolution
+- Automated test execution
+- JaCoCo code coverage requirements
+- OWASP dependency vulnerability scanning
+
+The `main` branch is protected and changes are integrated through pull requests after required CI checks pass.
+
+### Code Coverage
+
+JaCoCo is integrated into the Maven build to measure automated test coverage.
+
+Current project coverage is approximately:
+
+```text
+Instruction Coverage: ~89%
+Branch Coverage:      ~83%
 ## Docker and Local Development
 
 The application is fully containerized using Docker and Docker Compose.
@@ -942,7 +968,6 @@ The current system provides a strong backend foundation for reservation manageme
 - Rate limiting for public and authentication endpoints
 - Database migrations using Flyway or Liquibase
 - Testcontainers-based PostgreSQL integration testing
-- CI/CD pipeline using GitHub Actions
 - Cloud deployment using AWS or Azure
 - Container orchestration using Kubernetes
 - Metrics and health monitoring using Spring Boot Actuator
