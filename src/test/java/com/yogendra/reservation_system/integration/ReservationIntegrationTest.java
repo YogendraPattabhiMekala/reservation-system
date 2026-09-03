@@ -6,21 +6,18 @@ import com.yogendra.reservation_system.entity.User;
 import com.yogendra.reservation_system.model.Room;
 import com.yogendra.reservation_system.repository.RoomRepository;
 import com.yogendra.reservation_system.repository.UserRepository;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -35,10 +32,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @ActiveProfiles("test")
-@WithMockUser(
-        username = "integrationadmin",
-        roles = "ADMIN"
-)
 class ReservationIntegrationTest {
 
     @Autowired
@@ -58,9 +51,9 @@ class ReservationIntegrationTest {
     void setUpAuthenticatedUser() {
 
         /*
-         * @WithMockUser creates the Spring Security Authentication,
-         * while this database user allows ReservationServiceImpl
-         * to resolve the same username and attach it to reservations.
+         * MockMvc requests authenticate as "integrationadmin" using the
+         * Spring Security request post-processor. This database user lets
+         * ReservationServiceImpl resolve the same username and attach ownership.
          */
         if (userRepository
                 .findByUsername("integrationadmin")
@@ -154,7 +147,7 @@ class ReservationIntegrationTest {
                 );
 
         mockMvc.perform(
-                        post("/reservation")
+                        post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                 .contentType("application/json")
                                 .content(
                                         objectMapper.writeValueAsString(request)
@@ -167,7 +160,6 @@ class ReservationIntegrationTest {
                 .andExpect(jsonPath("$.checkInDate").value("2026-08-20"))
                 .andExpect(jsonPath("$.checkOutDate").value("2026-08-25"));
     }
-
 
     @Test
     void createThenGetReservation_ShouldReturnCreatedReservation()
@@ -182,10 +174,9 @@ class ReservationIntegrationTest {
         String createResponse =
                 mockMvc.perform(
                                 post("/reservation")
+                                        .with(user("integrationadmin").roles("ADMIN"))
                                         .contentType("application/json")
-                                        .content(
-                                                objectMapper.writeValueAsString(request)
-                                        )
+                                        .content(objectMapper.writeValueAsString(request))
                         )
                         .andExpect(status().isCreated())
                         .andReturn()
@@ -200,6 +191,7 @@ class ReservationIntegrationTest {
 
         mockMvc.perform(
                         get("/reservation/" + id)
+                                .with(user("integrationadmin").roles("ADMIN"))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id))
@@ -222,7 +214,7 @@ class ReservationIntegrationTest {
 
         String createResponse =
                 mockMvc.perform(
-                                post("/reservation")
+                                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                         .contentType("application/json")
                                         .content(
                                                 objectMapper.writeValueAsString(
@@ -250,7 +242,7 @@ class ReservationIntegrationTest {
                 );
 
         mockMvc.perform(
-                        put("/reservation/" + id)
+                        put("/reservation/" + id).with(user("integrationadmin").roles("ADMIN"))
                                 .contentType("application/json")
                                 .content(
                                         objectMapper.writeValueAsString(
@@ -290,7 +282,7 @@ class ReservationIntegrationTest {
 
         String createResponse =
                 mockMvc.perform(
-                                post("/reservation")
+                                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                         .contentType("application/json")
                                         .content(
                                                 objectMapper.writeValueAsString(request)
@@ -308,12 +300,12 @@ class ReservationIntegrationTest {
                         .asLong();
 
         mockMvc.perform(
-                        delete("/reservation/" + id)
+                        delete("/reservation/" + id).with(user("integrationadmin").roles("ADMIN"))
                 )
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(
-                        get("/reservation/" + id)
+                        get("/reservation/" + id).with(user("integrationadmin").roles("ADMIN"))
                 )
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
@@ -344,7 +336,7 @@ class ReservationIntegrationTest {
                 );
 
         mockMvc.perform(
-                post("/reservation")
+                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                         .contentType("application/json")
                         .content(
                                 objectMapper.writeValueAsString(r1)
@@ -352,7 +344,7 @@ class ReservationIntegrationTest {
         ).andExpect(status().isCreated());
 
         mockMvc.perform(
-                post("/reservation")
+                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                         .contentType("application/json")
                         .content(
                                 objectMapper.writeValueAsString(r2)
@@ -360,7 +352,7 @@ class ReservationIntegrationTest {
         ).andExpect(status().isCreated());
 
         mockMvc.perform(
-                post("/reservation")
+                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                         .contentType("application/json")
                         .content(
                                 objectMapper.writeValueAsString(r3)
@@ -368,7 +360,7 @@ class ReservationIntegrationTest {
         ).andExpect(status().isCreated());
 
         mockMvc.perform(
-                        get("/reservation/search")
+                        get("/reservation/search").with(user("integrationadmin").roles("ADMIN"))
                                 .param(
                                         "customerName",
                                         "da"
@@ -408,7 +400,7 @@ class ReservationIntegrationTest {
                 );
 
         mockMvc.perform(
-                post("/reservation")
+                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                         .contentType("application/json")
                         .content(
                                 objectMapper.writeValueAsString(r1)
@@ -416,7 +408,7 @@ class ReservationIntegrationTest {
         ).andExpect(status().isCreated());
 
         mockMvc.perform(
-                post("/reservation")
+                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                         .contentType("application/json")
                         .content(
                                 objectMapper.writeValueAsString(r2)
@@ -424,7 +416,7 @@ class ReservationIntegrationTest {
         ).andExpect(status().isCreated());
 
         mockMvc.perform(
-                post("/reservation")
+                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                         .contentType("application/json")
                         .content(
                                 objectMapper.writeValueAsString(r3)
@@ -432,7 +424,7 @@ class ReservationIntegrationTest {
         ).andExpect(status().isCreated());
 
         mockMvc.perform(
-                        get("/reservation/filter")
+                        get("/reservation/filter").with(user("integrationadmin").roles("ADMIN"))
                                 .param(
                                         "roomType",
                                         "del"
@@ -480,7 +472,7 @@ class ReservationIntegrationTest {
                 );
 
         mockMvc.perform(
-                post("/reservation")
+                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                         .contentType("application/json")
                         .content(
                                 objectMapper.writeValueAsString(r1)
@@ -488,7 +480,7 @@ class ReservationIntegrationTest {
         ).andExpect(status().isCreated());
 
         mockMvc.perform(
-                post("/reservation")
+                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                         .contentType("application/json")
                         .content(
                                 objectMapper.writeValueAsString(r2)
@@ -496,7 +488,7 @@ class ReservationIntegrationTest {
         ).andExpect(status().isCreated());
 
         mockMvc.perform(
-                post("/reservation")
+                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                         .contentType("application/json")
                         .content(
                                 objectMapper.writeValueAsString(r3)
@@ -504,7 +496,7 @@ class ReservationIntegrationTest {
         ).andExpect(status().isCreated());
 
         mockMvc.perform(
-                        get("/reservation/advanced-filter")
+                        get("/reservation/advanced-filter").with(user("integrationadmin").roles("ADMIN"))
                                 .param("customerName", "dav")
                                 .param("roomType", "del")
                 )
@@ -558,7 +550,7 @@ class ReservationIntegrationTest {
                 );
 
         mockMvc.perform(
-                post("/reservation")
+                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                         .contentType("application/json")
                         .content(
                                 objectMapper.writeValueAsString(r1)
@@ -566,7 +558,7 @@ class ReservationIntegrationTest {
         ).andExpect(status().isCreated());
 
         mockMvc.perform(
-                post("/reservation")
+                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                         .contentType("application/json")
                         .content(
                                 objectMapper.writeValueAsString(r2)
@@ -574,7 +566,7 @@ class ReservationIntegrationTest {
         ).andExpect(status().isCreated());
 
         mockMvc.perform(
-                post("/reservation")
+                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                         .contentType("application/json")
                         .content(
                                 objectMapper.writeValueAsString(r3)
@@ -582,7 +574,7 @@ class ReservationIntegrationTest {
         ).andExpect(status().isCreated());
 
         mockMvc.perform(
-                post("/reservation")
+                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                         .contentType("application/json")
                         .content(
                                 objectMapper.writeValueAsString(r4)
@@ -590,7 +582,7 @@ class ReservationIntegrationTest {
         ).andExpect(status().isCreated());
 
         mockMvc.perform(
-                        get("/reservation/dynamic-filter")
+                        get("/reservation/dynamic-filter").with(user("integrationadmin").roles("ADMIN"))
                                 .param("customerName", "da")
                                 .param("roomType", "del")
                                 .param("page", "0")
@@ -630,7 +622,7 @@ class ReservationIntegrationTest {
 
         String createResponse =
                 mockMvc.perform(
-                                post("/reservation")
+                                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                         .contentType("application/json")
                                         .content(
                                                 objectMapper.writeValueAsString(request)
@@ -652,7 +644,7 @@ class ReservationIntegrationTest {
                                 "/reservation/"
                                         + id
                                         + "/status"
-                        )
+                        ).with(user("integrationadmin").roles("ADMIN"))
                                 .param(
                                         "status",
                                         "CONFIRMED"
@@ -665,7 +657,7 @@ class ReservationIntegrationTest {
                 );
 
         mockMvc.perform(
-                        get("/reservation/" + id)
+                        get("/reservation/" + id).with(user("integrationadmin").roles("ADMIN"))
                 )
                 .andExpect(status().isOk())
                 .andExpect(
@@ -687,7 +679,7 @@ class ReservationIntegrationTest {
 
         String createResponse =
                 mockMvc.perform(
-                                post("/reservation")
+                                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                         .contentType("application/json")
                                         .content(
                                                 objectMapper.writeValueAsString(request)
@@ -709,7 +701,7 @@ class ReservationIntegrationTest {
                                 "/reservation/"
                                         + id
                                         + "/status"
-                        )
+                        ).with(user("integrationadmin").roles("ADMIN"))
                                 .param(
                                         "status",
                                         "CONFIRMED"
@@ -722,7 +714,7 @@ class ReservationIntegrationTest {
                                 "/reservation/"
                                         + id
                                         + "/status"
-                        )
+                        ).with(user("integrationadmin").roles("ADMIN"))
                                 .param(
                                         "status",
                                         "CANCELLED"
@@ -739,7 +731,7 @@ class ReservationIntegrationTest {
                                 "/reservation/"
                                         + id
                                         + "/status"
-                        )
+                        ).with(user("integrationadmin").roles("ADMIN"))
                                 .param(
                                         "status",
                                         "CONFIRMED"
@@ -775,7 +767,7 @@ class ReservationIntegrationTest {
 
         String responseBody =
                 mockMvc.perform(
-                                post("/reservation")
+                                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                         .contentType("application/json")
                                         .content(
                                                 objectMapper.writeValueAsString(request)
@@ -801,7 +793,7 @@ class ReservationIntegrationTest {
                         .asLong();
 
         mockMvc.perform(
-                        get("/reservation/" + id)
+                        get("/reservation/" + id).with(user("integrationadmin").roles("ADMIN"))
                 )
                 .andExpect(status().isOk())
                 .andExpect(
@@ -826,7 +818,7 @@ class ReservationIntegrationTest {
                 );
 
         mockMvc.perform(
-                        post("/reservation")
+                        post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                 .contentType("application/json")
                                 .content(
                                         objectMapper.writeValueAsString(request)
@@ -862,7 +854,7 @@ class ReservationIntegrationTest {
                 );
 
         mockMvc.perform(
-                        post("/reservation")
+                        post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
                                         objectMapper.writeValueAsString(firstRequest)
@@ -880,7 +872,7 @@ class ReservationIntegrationTest {
                 );
 
         mockMvc.perform(
-                        post("/reservation")
+                        post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
                                         objectMapper.writeValueAsString(overlappingRequest)
@@ -911,7 +903,7 @@ class ReservationIntegrationTest {
 
         String firstResponse =
                 mockMvc.perform(
-                                post("/reservation")
+                                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(
                                                 objectMapper.writeValueAsString(firstRequest)
@@ -940,7 +932,7 @@ class ReservationIntegrationTest {
 
         String secondResponse =
                 mockMvc.perform(
-                                post("/reservation")
+                                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(
                                                 objectMapper.writeValueAsString(secondRequest)
@@ -968,7 +960,7 @@ class ReservationIntegrationTest {
                 );
 
         mockMvc.perform(
-                        put("/reservation/" + secondId)
+                        put("/reservation/" + secondId).with(user("integrationadmin").roles("ADMIN"))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
                                         objectMapper.writeValueAsString(conflictingUpdate)
@@ -1022,7 +1014,7 @@ class ReservationIntegrationTest {
                 );
 
         mockMvc.perform(
-                        post("/reservation")
+                        post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
                                         objectMapper.writeValueAsString(firstRequest)
@@ -1035,7 +1027,7 @@ class ReservationIntegrationTest {
                 );
 
         mockMvc.perform(
-                        post("/reservation")
+                        post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
                                         objectMapper.writeValueAsString(secondRequest)
@@ -1069,7 +1061,7 @@ class ReservationIntegrationTest {
                 );
 
         mockMvc.perform(
-                        post("/reservation")
+                        post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
                                         objectMapper.writeValueAsString(firstRequest)
@@ -1087,7 +1079,7 @@ class ReservationIntegrationTest {
                 );
 
         mockMvc.perform(
-                        post("/reservation")
+                        post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
                                         objectMapper.writeValueAsString(overlappingRequest)
@@ -1127,7 +1119,7 @@ class ReservationIntegrationTest {
 
         String firstResponse =
                 mockMvc.perform(
-                                post("/reservation")
+                                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(
                                                 objectMapper.writeValueAsString(firstRequest)
@@ -1156,7 +1148,7 @@ class ReservationIntegrationTest {
 
         String secondResponse =
                 mockMvc.perform(
-                                post("/reservation")
+                                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(
                                                 objectMapper.writeValueAsString(secondRequest)
@@ -1184,7 +1176,7 @@ class ReservationIntegrationTest {
                 );
 
         mockMvc.perform(
-                        put("/reservation/" + secondId)
+                        put("/reservation/" + secondId).with(user("integrationadmin").roles("ADMIN"))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
                                         objectMapper.writeValueAsString(conflictingUpdate)
@@ -1230,7 +1222,7 @@ class ReservationIntegrationTest {
                 );
 
         mockMvc.perform(
-                        post("/reservation")
+                        post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
                                         objectMapper.writeValueAsString(firstRequest)
@@ -1250,7 +1242,7 @@ class ReservationIntegrationTest {
 
         String secondResponse =
                 mockMvc.perform(
-                                post("/reservation")
+                                post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(
                                                 objectMapper.writeValueAsString(secondRequest)
@@ -1279,7 +1271,7 @@ class ReservationIntegrationTest {
                 );
 
         mockMvc.perform(
-                        put("/reservation/" + secondId)
+                        put("/reservation/" + secondId).with(user("integrationadmin").roles("ADMIN"))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
                                         objectMapper.writeValueAsString(updateRequest)
@@ -1302,7 +1294,7 @@ class ReservationIntegrationTest {
                 );
 
         mockMvc.perform(
-                        post("/reservation")
+                        post("/reservation").with(user("integrationadmin").roles("ADMIN"))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(
                                         objectMapper.writeValueAsString(
