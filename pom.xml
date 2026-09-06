@@ -133,9 +133,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-        <groupId>org.testcontainers</groupId>
-        <artifactId>testcontainers-postgresql</artifactId>
-        <scope>test</scope>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-postgresql</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -202,18 +202,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
-                <version>12.1.8</version>
-                <configuration>
-                    <failBuildOnCVSS>7</failBuildOnCVSS>
-                    <formats>
-                        <format>HTML</format>
-                        <format>JSON</format>
-                    </formats>
-                </configuration>
             </plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

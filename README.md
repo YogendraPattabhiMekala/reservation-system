@@ -22,6 +22,9 @@ The system provides secure REST APIs for managing rooms and reservations while i
 - Mockito
 - MockMvc
 - JaCoCo
+- Testcontainers
+- Flyway
+- GitHub Actions
 
 ## Core Features
 
@@ -267,23 +270,45 @@ The test suite includes:
 ### Current Test Status
 
 ```text
-159 tests passed
-0 tests failed
+160 tests passed
+0 failures
+0 errors
+0 skipped
 ```
 
 The complete test suite is executed as a regression check after application changes.
 
-### Test Database
+### Test Database Strategy
 
-Automated tests use an isolated H2 in-memory database instead of the production PostgreSQL database.
+The project uses two complementary database-testing approaches: H2 for fast automated testing and PostgreSQL Testcontainers for higher-fidelity integration testing.
 
-The test environment is configured through:
+#### H2 Test Environment
+
+Most automated tests use an isolated H2 in-memory database for fast and repeatable test execution.
+
+The H2 test environment is configured through:
 
 ```text
 src/test/resources/application-test.properties
 ```
 
-Tests requiring the application context use the `test` Spring profile so that test execution remains isolated from local and containerized PostgreSQL environments.
+Tests using the application context activate the `test` Spring profile, keeping automated tests isolated from the local PostgreSQL development database.
+
+#### PostgreSQL Integration Testing with Testcontainers
+
+The project also includes PostgreSQL integration testing using Testcontainers.
+
+Testcontainers dynamically starts a real PostgreSQL Docker container during the integration test, allowing database behavior to be validated against PostgreSQL rather than relying exclusively on H2.
+
+The Testcontainers-specific test configuration is located at:
+
+```text
+src/test/resources/application-testcontainers.properties
+```
+
+The PostgreSQL integration test validates application startup and persistence behavior against a containerized PostgreSQL instance.
+
+This approach combines fast H2-based testing for the broader test suite with higher-fidelity PostgreSQL verification for database integration behavior.
 
 ### Testing Tools
 
@@ -294,6 +319,8 @@ Tests requiring the application context use the `test` Spring profile so that te
 - Spring Security Test
 - H2 Database
 - JaCoCo
+- Testcontainers
+- PostgreSQL
 
 ### Areas Tested
 
@@ -353,7 +380,7 @@ After significant changes, the complete test suite is executed to ensure existin
 Current regression baseline:
 
 ```text
-159 / 159 tests passing
+160 / 160 tests passing
 ```
 ## CI/CD and Code Quality
 
@@ -535,7 +562,7 @@ The automated test environment uses H2 and the Spring `test` profile, keeping te
 Current regression baseline:
 
 ```text
-159 / 159 tests passing
+160 / 160 tests passing
 ```
 
 ### Build the Application
@@ -660,6 +687,35 @@ The application follows several backend engineering principles:
 ## Database Model
 
 The application uses PostgreSQL as its primary relational database and Spring Data JPA/Hibernate for persistence.
+### Database Migrations with Flyway
+
+Database schema changes are managed using Flyway migrations rather than relying on Hibernate to create the production schema automatically.
+
+Migration scripts are stored in:
+
+```text
+src/main/resources/db/migration/
+```
+
+The initial schema is defined by:
+
+```text
+V1__create_initial_schema.sql
+```
+
+The migration creates the core database objects for:
+
+- Users
+- Rooms
+- Reservations
+- Primary and foreign-key constraints
+- Unique constraints
+- Reservation status validation
+- Database indexes used by reservation queries
+
+For PostgreSQL environments, Hibernate validates the mapped entities against the schema while Flyway manages schema creation and evolution.
+
+Using versioned migrations makes database changes reproducible, reviewable, and suitable for CI/CD and production deployments.
 
 The core domain consists of three primary entities:
 
@@ -966,8 +1022,6 @@ The current system provides a strong backend foundation for reservation manageme
 - Advanced role and permission management
 - Redis caching for frequently accessed data
 - Rate limiting for public and authentication endpoints
-- Database migrations using Flyway or Liquibase
-- Testcontainers-based PostgreSQL integration testing
 - Cloud deployment using AWS or Azure
 - Container orchestration using Kubernetes
 - Metrics and health monitoring using Spring Boot Actuator
@@ -1003,8 +1057,8 @@ The backend currently includes:
 ### Current Regression Baseline
 
 ```text
-159 tests
-159 passed
+160 tests
+160 passed
 0 failed
 ```
 
